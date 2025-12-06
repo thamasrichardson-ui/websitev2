@@ -1,0 +1,141 @@
+body {
+    background-color: #e4e3ea;
+    font-family: Helvetica, sans-serif;
+}
+h1, p, ul, h2, h3, h4, h5, h6, small, figcaption{
+    color: #1a232e;
+}
+h1 {
+    font-size: 2.75rem;
+}
+h2 {
+    font-size: 2rem;
+}
+p, ul, figcaption{
+    font-size: 1.15rem;
+    line-height: 1.5;
+}
+iframe {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+}
+nav 
+{
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+}
+figure {
+   text-align: center;
+}
+.icon {
+    width: 48px;
+    height: 48px;
+    border-radius: .5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
+}
+.bottom
+{display: flex;
+    justify-content: center;
+}
+.jumbotron {
+    background-color: #d84e1f;
+    padding: 1rem 1rem;
+    margin-bottom: 2rem;
+    border-radius: 1rem;
+    display: flex;
+    background-size: cover;
+}
+.aboutmebio {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.projecttext {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.mainphoto {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    width: 400px;
+    height: 400px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+.otherphoto {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+.thomas {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 2.5rem;
+    border-radius: 100%;
+    width: 350px;
+    height: 350px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+.homephoto {
+    margin: 1rem auto 1rem auto;
+    margin-top: 1rem;
+    border-radius: 25px;
+    width: 375px;
+    height: 375px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+/* Gemini help implelment some fixes after user testing */
+.nav-link-item {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;    
+    text-decoration: none; 
+    color: inherit;        
+}
+.nav-label {
+    font-size: 0.8rem;     
+    margin-top: 0.2rem;     
+    white-space: nowrap;   
+}
+.active {
+    pointer-events: none; 
+    cursor: default;    
+    color: #000;          
+    text-decoration: none;
+    font-weight: bold;  
+    opacity: 0.5;    
+}
+.project-tile {
+    display: flex;
+    flex-direction: row;
+    margin: auto;
+    justify-content: center;
+    gap: 2rem;
+}
+.project-tile a {
+    text-decoration: none;
+    color: inherit; 
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+.project-tile a:hover{
+    transform: translateY(-10px);
+}
+.project-label {
+    margin-top: 10px; 
+    font-size: 1.25rem; 
+}

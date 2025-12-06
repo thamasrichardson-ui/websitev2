@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Pokédex</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .pokedex {
+            background: linear-gradient(145deg, #dc0a2d, #b00020);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+        }
+
+        .pokedex::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 30px;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, #4fc3f7, #0288d1);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px rgba(79, 195, 247, 0.6);
+        }
+
+        .pokedex::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            left: 110px;
+            width: 20px;
+            height: 20px;
+            background: #f44336;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .screen-container {
+            background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 40px;
+            box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .screen {
+            background: #9fdfbf;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 400px;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2d5f3f;
+        }
+
+        .pokemon-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d5f3f;
+        }
+
+        .pokemon-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a1a1a;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .sprite-container {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .pokemon-sprite {
+            width: 120px;
+            height: 120px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #2d5f3f;
+        }
+
+        .info-value {
+            color: #1a1a1a;
+        }
+
+        .type-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .type-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .type-normal { background: #A8A878; }
+        .type-fire { background: #F08030; }
+        .type-water { background: #6890F0; }
+        .type-electric { background: #F8D030; color: #1a1a1a; }
+        .type-grass { background: #78C850; }
+        .type-ice { background: #98D8D8; }
+        .type-fighting { background: #C03028; }
+        .type-poison { background: #A040A0; }
+        .type-ground { background: #E0C068; }
+        .type-flying { background: #A890F0; }
+        .type-psychic { background: #F85888; }
+        .type-bug { background: #A8B820; }
+        .type-rock { background: #B8A038; }
+        .type-ghost { background: #705898; }
+        .type-dragon { background: #7038F8; }
+        .type-dark { background: #705848; }
+        .type-steel { background: #B8B8D0; }
+        .type-fairy { background: #EE99AC; }
+
+        .description {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(145deg, #333, #1a1a1a);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: linear-gradient(145deg, #444, #2a2a2a);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-prev {
+            grid-column: 1;
+        }
+
+        .btn-random {
+            grid-column: 2;
+        }
+
+        .btn-next {
+            grid-column: 3;
+        }
+
+        .search-container {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn-search {
+            background: linear-gradient(145deg, #4CAF50, #388E3C);
+            padding: 12px 20px;
+        }
+
+        .btn-search:hover {
+            background: linear-gradient(145deg, #5FBF62, #4CAF50);
+        }
+
+        .loading {
+            text-align: center;
+            color: #2d5f3f;
+            font-size: 14px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="pokedex">
+        <div class="screen-container">
+            <div class="screen" id="screen">
+                <div class="loading">Loading Pokédex...</div>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn btn-prev" id="prevBtn">◄ PREV</button>
+            <button class="btn btn-random" id="randomBtn">🎲 RANDOM</button>
+            <button class="btn btn-next" id="nextBtn">NEXT ►</button>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by name or #...">
+            <button class="btn btn-search" id="searchBtn">GO</button>
+        </div>
+    </div>
+
+    <script>
+        const pokedexData = {
+            1: { name: "Bulbasaur", types: ["Grass", "Poison"], height: "0.7m", weight: "6.9kg", description: "A Grass/Poison type that carries a seed on its back from birth." },
+            2: { name: "Ivysaur", types: ["Grass", "Poison"], height: "1.0m", weight: "13.0kg", description: "The bulb on its back grows larger as it evolves." },
+            3: { name: "Venusaur", types: ["Grass", "Poison"], height: "2.0m", weight: "100.0kg", description: "Its flower releases a soothing aroma to calm emotions." },
+            4: { name: "Charmander", types: ["Fire"], height: "0.6m", weight: "8.5kg", description: "A flame burns at the tip of its tail from birth." },
+            5: { name: "Charmeleon", types: ["Fire"], height: "1.1m", weight: "19.0kg", description: "Its claws are very sharp and it's highly aggressive." },
+            6: { name: "Charizard", types: ["Fire", "Flying"], height: "1.7m", weight: "90.5kg", description: "Capable of breathing intense flames that can melt rock." },
+            7: { name: "Squirtle", types: ["Water"], height: "0.5m", weight: "9.0kg", description: "Hides in its shell and shoots water at foes." },
+            8: { name: "Wartortle", types: ["Water"], height: "1.0m", weight: "22.5kg", description: "Its furry tail is a symbol of longevity." },
+            9: { name: "Blastoise", types: ["Water"], height: "1.6m", weight: "85.5kg", description: "The cannons on its back are highly accurate." },
+            10: { name: "Caterpie", types: ["Bug"], height: "0.3m", weight: "2.9kg", description: "Its suction-cup feet allow it to climb trees." },
+            11: { name: "Metapod", types: ["Bug"], height: "0.7m", weight: "9.9kg", description: "A protective shell covers its body." },
+            12: { name: "Butterfree", types: ["Bug", "Flying"], height: "1.1m", weight: "32.0kg", description: "Its wings are covered with poisonous dust." },
+            13: { name: "Weedle", types: ["Bug", "Poison"], height: "0.3m", weight: "3.2kg", description: "Its stinger contains a powerful poison." },
+            14: { name: "Kakuna", types: ["Bug", "Poison"], height: "0.6m", weight: "10.0kg", description: "Nearly immobile, it waits for evolution." },
+            15: { name: "Beedrill", types: ["Bug", "Poison"], height: "1.0m", weight: "29.5kg", description: "Has three poisonous stingers on its body." },
+            16: { name: "Pidgey", types: ["Normal", "Flying"], height: "0.3m", weight: "1.8kg", description: "Very docile and easy to catch." },
+            17: { name: "Pidgeotto", types: ["Normal", "Flying"], height: "1.1m", weight: "30.0kg", description: "This bird hunts for food in a large territory." },
+            18: { name: "Pidgeot", types: ["Normal", "Flying"], height: "1.5m", weight: "39.5kg", description: "It spreads its gorgeous wings to intimidate enemies." },
+            19: { name: "Rattata", types: ["Normal"], height: "0.3m", weight: "3.5kg", description: "Very cautious and will flee if threatened." },
+            20: { name: "Raticate", types: ["Normal"], height: "0.7m", weight: "18.5kg", description: "Its fangs grow continuously and must be worn down." },
+            21: { name: "Spearow", types: ["Normal", "Flying"], height: "0.3m", weight: "2.0kg", description: "Very aggressive and territorial by nature." },
+            22: { name: "Fearow", types: ["Normal", "Flying"], height: "1.2m", weight: "38.0kg", description: "With its long neck, it can reach distant prey." },
+            23: { name: "Ekans", types: ["Poison"], height: "2.0m", weight: "6.9kg", description: "Slithers silently through grass searching for prey." },
+            24: { name: "Arbok", types: ["Poison"], height: "3.5m", weight: "65.0kg", description: "The pattern on its belly is said to be frightening." },
+            25: { name: "Pikachu", types: ["Electric"], height: "0.4m", weight: "6.0kg", description: "Stores electricity in the pouches on its cheeks." },
+            26: { name: "Raichu", types: ["Electric"], height: "0.8m", weight: "30.0kg", description: "Can discharge up to 100,000 volts of electricity." },
+            27: { name: "Sandshrew", types: ["Ground"], height: "0.6m", weight: "12.0kg", description: "Burrows deep underground in dry areas." },
+            28: { name: "Sandslash", types: ["Ground"], height: "1.0m", weight: "29.5kg", description: "Its sharp claws are its greatest weapons." },
+            29: { name: "Nidoran-f", types: ["Poison"], height: "0.4m", weight: "7.0kg", description: "A female member of its species with poisonous barbs." },
+            30: { name: "Nidorina", types: ["Poison"], height: "0.8m", weight: "20.0kg", description: "Emits ultrasonic cries to confuse enemies." },
+            31: { name: "Nidoqueen", types: ["Poison", "Ground"], height: "1.3m", weight: "60.0kg", description: "Uses its sturdy body to protect its young." },
+            32: { name: "Nidoran-m", types: ["Poison"], height: "0.5m", weight: "9.0kg", description: "A male member of its species with venomous horns." },
+            33: { name: "Nidorino", types: ["Poison"], height: "0.9m", weight: "19.5kg", description: "Its horn contains powerful venom." },
+            34: { name: "Nidoking", types: ["Poison", "Ground"], height: "1.4m", weight: "62.0kg", description: "Uses its powerful tail in battle." },
+            35: { name: "Clefairy", types: ["Fairy"], height: "0.6m", weight: "7.5kg", description: "Appears under the full moon to dance." },
+            36: { name: "Clefable", types: ["Fairy"], height: "1.3m", weight: "40.0kg", description: "Walks on its toes to avoid detection." },
+            37: { name: "Vulpix", types: ["Fire"], height: "0.6m", weight: "9.9kg", description: "Has six beautiful tails that glow red." },
+            38: { name: "Ninetales", types: ["Fire"], height: "1.1m", weight: "19.9kg", description: "Said to live for 1,000 years with mystical powers." },
+            39: { name: "Jigglypuff", types: ["Normal", "Fairy"], height: "0.5m", weight: "5.5kg", description: "Sings a soothing lullaby that puts listeners to sleep." },
+            40: { name: "Wigglytuff", types: ["Normal", "Fairy"], height: "1.0m", weight: "12.0kg", description: "Its body is soft and rubbery to the touch." },
+            41: { name: "Zubat", types: ["Poison", "Flying"], height: "0.8m", weight: "7.5kg", description: "Forms colonies in dark caves and uses ultrasonic waves." },
+            42: { name: "Golbat", types: ["Poison", "Flying"], height: "1.6m", weight: "55.0kg", description: "Loves to drink the blood of living creatures." },
+            43: { name: "Oddish", types: ["Grass", "Poison"], height: "0.5m", weight: "5.4kg", description: "Buries itself in soil during the day." },
+            44: { name: "Gloom", types: ["Grass", "Poison"], height: "0.8m", weight: "8.6kg", description: "Secretes a foul-smelling fluid from its pistil." },
+            45: { name: "Vileplume", types: ["Grass", "Poison"], height: "1.2m", weight: "18.6kg", description: "Has the largest petals in the world." },
+            46: { name: "Paras", types: ["Bug", "Grass"], height: "0.3m", weight: "5.4kg", description: "Burrows to suck tree roots with mushrooms on its back." },
+            47: { name: "Parasect", types: ["Bug", "Grass"], height: "1.0m", weight: "29.5kg", description: "The mushroom on its back controls this creature." },
+            48: { name: "Venonat", types: ["Bug", "Poison"], height: "1.0m", weight: "30.0kg", description: "Uses radar-like eyes to navigate in darkness." },
+            49: { name: "Venomoth", types: ["Bug", "Poison"], height: "1.5m", weight: "12.5kg", description: "Scatters poisonous scales from its wings." },
+            50: { name: "Diglett", types: ["Ground"], height: "0.2m", weight: "0.8kg", description: "Lives about one yard underground where it feeds on roots." },
+            51: { name: "Dugtrio", types: ["Ground"], height: "0.7m", weight: "33.3kg", description: "A trio of creatures that burrow together." },
+            52: { name: "Meowth", types: ["Normal"], height: "0.4m", weight: "4.2kg", description: "Loves shiny objects and collects round things." },
+            53: { name: "Persian", types: ["Normal"], height: "1.0m", weight: "32.0kg", description: "Has a regal appearance and walks with grace." },
+            54: { name: "Psyduck", types: ["Water"], height: "0.8m", weight: "19.6kg", description: "Suffers from constant headaches." },
+            55: { name: "Golduck", types: ["Water"], height: "1.7m", weight: "76.6kg", description: "An excellent swimmer that can outpace any vessel." },
+            56: { name: "Mankey", types: ["Fighting"], height: "0.5m", weight: "28.0kg", description: "Extremely quick to anger and aggressive." },
+            57: { name: "Primeape", types: ["Fighting"], height: "1.0m", weight: "32.0kg", description: "Always furious and will chase anything that moves." },
+            58: { name: "Growlithe", types: ["Fire"], height: "0.7m", weight: "19.0kg", description: "Very protective and loyal to its trainer." },
+            59: { name: "Arcanine", types: ["Fire"], height: "1.9m", weight: "155.0kg", description: "A legendary canine known for its beauty and speed." },
+            60: { name: "Poliwag", types: ["Water"], height: "0.6m", weight: "12.4kg", description: "Its swirl pattern varies by region." },
+            61: { name: "Poliwhirl", types: ["Water"], height: "1.0m", weight: "20.0kg", description: "Can live on land or in water with equal ease." },
+            62: { name: "Poliwrath", types: ["Water", "Fighting"], height: "1.3m", weight: "54.0kg", description: "A powerful swimmer with muscular arms." },
+            63: { name: "Abra", types: ["Psychic"], height: "0.9m", weight: "19.5kg", description: "Sleeps 18 hours a day but can teleport if threatened." },
+            64: { name: "Kadabra", types: ["Psychic"], height: "1.3m", weight: "56.5kg", description: "Emits special alpha waves from its body." },
+            65: { name: "Alakazam", types: ["Psychic"], height: "1.5m", weight: "48.0kg", description: "Said to have an IQ of 5,000." },
+            66: { name: "Machop", types: ["Fighting"], height: "0.8m", weight: "19.5kg", description: "Trains by lifting heavy objects daily." },
+            67: { name: "Machoke", types: ["Fighting"], height: "1.5m", weight: "70.5kg", description: "Wears a belt to contain its overwhelming power." },
+            68: { name: "Machamp", types: ["Fighting"], height: "1.6m", weight: "130.0kg", description: "Has four powerful arms that can throw punches rapidly." },
+            69: { name: "Bellsprout", types: ["Grass", "Poison"], height: "0.7m", weight: "4.0kg", description: "Prefers hot and humid environments." },
+            70: { name: "Weepinbell", types: ["Grass", "Poison"], height: "1.0m", weight: "6.4kg", description: "Spits corrosive acid to dissolve prey." },
+            71: { name: "Victreebel", types: ["Grass", "Poison"], height: "1.7m", weight: "15.5kg", description: "Uses its long vine to capture prey." },
+            72: { name: "Tentacool", types: ["Water", "Poison"], height: "0.9m", weight: "45.5kg", description: "Drifts in shallow seas stinging swimmers." },
+            73: { name: "Tentacruel", types: ["Water", "Poison"], height: "1.6m", weight: "55.0kg", description: "Has 80 tentacles that can extend and retract." },
+            74: { name: "Geodude", types: ["Rock", "Ground"], height: "0.4m", weight: "20.0kg", description: "Often mistaken for a rock when sleeping." },
+            75: { name: "Graveler", types: ["Rock", "Ground"], height: "1.0m", weight: "105.0kg", description: "Rolls down mountainsides to move." },
+            76: { name: "Golem", types: ["Rock", "Ground"], height: "1.4m", weight: "300.0kg", description: "Rolls its body to attack and travel." },
+            77: { name: "Ponyta", types: ["Fire"], height: "1.0m", weight: "30.0kg", description: "Its mane blazes brightly when it runs." },
+            78: { name: "Rapidash", types: ["Fire"], height: "1.7m", weight: "95.0kg", description: "Capable of running at incredible speeds." },
+            79: { name: "Slowpoke", types: ["Water", "Psychic"], height: "1.2m", weight: "36.0kg", description: "Incredibly slow and dopey." },
+            80: { name: "Slowbro", types: ["Water", "Psychic"], height: "1.6m", weight: "78.5kg", description: "A creature with a shell clamped on its tail." },
+            81: { name: "Magnemite", types: ["Electric", "Steel"], height: "0.3m", weight: "6.0kg", description: "Uses antigravity to stay suspended in the air." },
+            82: { name: "Magneton", types: ["Electric", "Steel"], height: "1.0m", weight: "60.0kg", description: "Formed by three units linked together." },
+            83: { name: "Farfetchd", types: ["Normal", "Flying"], height: "0.8m", weight: "15.0kg", description: "Always carries a plant stalk in its wing." },
+            84: { name: "Doduo", types: ["Normal", "Flying"], height: "1.4m", weight: "39.2kg", description: "A two-headed bird that runs quickly." },
+            85: { name: "Dodrio", types: ["Normal", "Flying"], height: "1.8m", weight: "85.2kg", description: "Has three heads that face different directions." },
+            86: { name: "Seel", types: ["Water"], height: "1.1m", weight: "90.0kg", description: "Loves frigid seas and plays in icy water." },
+            87: { name: "Dewgong", types: ["Water", "Ice"], height: "1.7m", weight: "120.0kg", description: "Stores thermal energy in its body." },
+            88: { name: "Grimer", types: ["Poison"], height: "0.9m", weight: "30.0kg", description: "Born from sludge and toxic waste." },
+            89: { name: "Muk", types: ["Poison"], height: "1.2m", weight: "30.0kg", description: "Extremely toxic and leaves a trail of poison." },
+            90: { name: "Shellder", types: ["Water"], height: "0.3m", weight: "4.0kg", description: "Clamps down on prey with its hard shell." },
+            91: { name: "Cloyster", types: ["Water", "Ice"], height: "1.5m", weight: "132.5kg", description: "Protected by an extremely hard shell." },
+            92: { name: "Gastly", types: ["Ghost", "Poison"], height: "1.3m", weight: "0.1kg", description: "Almost entirely made of gas." },
+            93: { name: "Haunter", types: ["Ghost", "Poison"], height: "1.6m", weight: "0.1kg", description: "Hides in darkness to surprise victims." },
+            94: { name: "Gengar", types: ["Ghost", "Poison"], height: "1.5m", weight: "40.5kg", description: "Hides in shadows and drains heat from its surroundings." },
+            95: { name: "Onix", types: ["Rock", "Ground"], height: "8.8m", weight: "210.0kg", description: "Burrows underground at high speeds." },
+            96: { name: "Drowzee", types: ["Psychic"], height: "1.0m", weight: "32.4kg", description: "Feeds on the dreams of sleeping creatures." },
+            97: { name: "Hypno", types: ["Psychic"], height: "1.6m", weight: "75.6kg", description: "Uses a pendulum to hypnotize its prey." },
+            98: { name: "Krabby", types: ["Water"], height: "0.4m", weight: "6.5kg", description: "Lives near water and digs holes in sand." },
+            99: { name: "Kingler", types: ["Water"], height: "1.3m", weight: "60.0kg", description: "Has one enormous pincer as its main weapon." },
+            100: { name: "Voltorb", types: ["Electric"], height: "0.5m", weight: "10.4kg", description: "Often mistaken for a ball and kicked." },
+            101: { name: "Electrode", types: ["Electric"], height: "1.2m", weight: "66.6kg", description: "Stores massive amounts of electricity." },
+            102: { name: "Exeggcute", types: ["Grass", "Psychic"], height: "0.4m", weight: "2.5kg", description: "Six eggs that communicate telepathically." },
+            103: { name: "Exeggutor", types: ["Grass", "Psychic"], height: "2.0m", weight: "120.0kg", description: "Has three heads that think independently." },
+            104: { name: "Cubone", types: ["Ground"], height: "0.4m", weight: "6.5kg", description: "Wears the skull of its deceased mother." },
+            105: { name: "Marowak", types: ["Ground"], height: "1.0m", weight: "45.0kg", description: "Uses a bone as a club in battle." },
+            106: { name: "Hitmonlee", types: ["Fighting"], height: "1.5m", weight: "49.8kg", description: "Has legs that can stretch to kick from distance." },
+            107: { name: "Hitmonchan", types: ["Fighting"], height: "1.4m", weight: "50.2kg", description: "Punches at blinding speed." },
+            108: { name: "Lickitung", types: ["Normal"], height: "1.2m", weight: "65.5kg", description: "Uses its long tongue to capture prey." },
+            109: { name: "Koffing", types: ["Poison"], height: "0.6m", weight: "1.0kg", description: "Filled with toxic gases that can explode." },
+            110: { name: "Weezing", types: ["Poison"], height: "1.2m", weight: "9.5kg", description: "Two creatures fused together releasing toxic gas." },
+            111: { name: "Rhyhorn", types: ["Ground", "Rock"], height: "1.0m", weight: "115.0kg", description: "Strong but not very intelligent." },
+            112: { name: "Rhydon", types: ["Ground", "Rock"], height: "1.9m", weight: "120.0kg", description: "Can bore through solid rock with its horn." },
+            113: { name: "Chansey", types: ["Normal"], height: "1.1m", weight: "34.6kg", description: "Lays nutritious eggs daily." },
+            114: { name: "Tangela", types: ["Grass"], height: "1.0m", weight: "35.0kg", description: "Covered in blue vines that grow constantly." },
+            115: { name: "Kangaskhan", types: ["Normal"], height: "2.2m", weight: "80.0kg", description: "Protects its young in its pouch." },
+            116: { name: "Horsea", types: ["Water"], height: "0.4m", weight: "8.0kg", description: "Shoots ink from its mouth to escape danger." },
+            117: { name: "Seadra", types: ["Water"], height: "1.2m", weight: "25.0kg", description: "Has sharp spines that contain venom." },
+            118: { name: "Goldeen", types: ["Water"], height: "0.6m", weight: "15.0kg", description: "Known for its beautiful fins and horn." },
+            119: { name: "Seaking", types: ["Water"], height: "1.3m", weight: "39.0kg", description: "Makes a nest by hollowing out boulders." },
+            120: { name: "Staryu", types: ["Water"], height: "0.8m", weight: "34.5kg", description: "Has a red core that glows at night." },
+            121: { name: "Starmie", types: ["Water", "Psychic"], height: "1.1m", weight: "80.0kg", description: "Sends radio signals into space at night." },
+            122: { name: "Mr-mime", types: ["Psychic", "Fairy"], height: "1.3m", weight: "54.5kg", description: "Creates invisible walls with pantomiming." },
+            123: { name: "Scyther", types: ["Bug", "Flying"], height: "1.5m", weight: "56.0kg", description: "Slashes prey with its sharp scythes." },
+            124: { name: "Jynx", types: ["Ice", "Psychic"], height: "1.4m", weight: "40.6kg", description: "Moves rhythmically as if dancing." },
+            125: { name: "Electabuzz", types: ["Electric"], height: "1.1m", weight: "30.0kg", description: "Appears near power plants to feed on electricity." },
+            126: { name: "Magmar", types: ["Fire"], height: "1.3m", weight: "44.5kg", description: "Born in the heart of a volcano." },
+            127: { name: "Pinsir", types: ["Bug"], height: "1.5m", weight: "55.0kg", description: "Grips prey with its pincers and squeezes hard." },
+            128: { name: "Tauros", types: ["Normal"], height: "1.4m", weight: "88.4kg", description: "Once it charges, it won't stop running until it hits something." },
+            129: { name: "Magikarp", types: ["Water"], height: "0.9m", weight: "10.0kg", description: "Famous for being weak but can evolve into a powerful form." },
+            130: { name: "Gyarados", types: ["Water", "Flying"], height: "6.5m", weight: "235.0kg", description: "Rarely seen in the wild. Huge and vicious." },
+            131: { name: "Lapras", types: ["Water", "Ice"], height: "2.5m", weight: "220.0kg", description: "Ferries people across the sea on its back." },
+            132: { name: "Ditto", types: ["Normal"], height: "0.3m", weight: "4.0kg", description: "Can transform into any other Pokémon it sees." },
+            133: { name: "Eevee", types: ["Normal"], height: "0.3m", weight: "6.5kg", description: "Has an irregular genetic code that mutates easily." },
+            134: { name: "Vaporeon", types: ["Water"], height: "1.0m", weight: "29.0kg", description: "Can melt into water and become invisible." },
+            135: { name: "Jolteon", types: ["Electric"], height: "0.8m", weight: "24.5kg", description: "Bristling fur generates electricity." },
+            136: { name: "Flareon", types: ["Fire"], height: "0.9m", weight: "25.0kg", description: "Stores thermal energy in its fluffy body." },
+            137: { name: "Porygon", types: ["Normal"], height: "0.8m", weight: "36.5kg", description: "A man-made Pokémon created using computer code." },
+            138: { name: "Omanyte", types: ["Rock", "Water"], height: "0.4m", weight: "7.5kg", description: "An ancient Pokémon that was resurrected from a fossil." },
+            139: { name: "Omastar", types: ["Rock", "Water"], height: "1.0m", weight: "35.0kg", description: "Its sharp tentacles help it capture prey." },
+            140: { name: "Kabuto", types: ["Rock", "Water"], height: "0.5m", weight: "11.5kg", description: "A Pokémon that was resurrected from a fossil." },
+            141: { name: "Kabutops", types: ["Rock", "Water"], height: "1.3m", weight: "40.5kg", description: "Slices prey with its sharp claws." },
+            142: { name: "Aerodactyl", types: ["Rock", "Flying"], height: "1.8m", weight: "59.0kg", description: "A ferocious prehistoric Pokémon." },
+            143: { name: "Snorlax", types: ["Normal"], height: "2.1m", weight: "460.0kg", description: "Very lazy. Just eats and sleeps all day." },
+            144: { name: "Articuno", types: ["Ice", "Flying"], height: "1.7m", weight: "55.4kg", description: "A legendary bird Pokémon of ice." },
+            145: { name: "Zapdos", types: ["Electric", "Flying"], height: "1.6m", weight: "52.6kg", description: "A legendary bird Pokémon of electricity." },
+            146: { name: "Moltres", types: ["Fire", "Flying"], height: "2.0m", weight: "60.0kg", description: "A legendary bird Pokémon of fire." },
+            147: { name: "Dratini", types: ["Dragon"], height: "1.8m", weight: "3.3kg", description: "A mythical Pokémon rarely seen by people." },
+            148: { name: "Dragonair", types: ["Dragon"], height: "4.0m", weight: "16.5kg", description: "Stores energy within its body." },
+            149: { name: "Dragonite", types: ["Dragon", "Flying"], height: "2.2m", weight: "210.0kg", description: "Can fly around the world in 16 hours." },
+            150: { name: "Mewtwo", types: ["Psychic"], height: "2.0m", weight: "122.0kg", description: "Created through genetic manipulation." },
+            151: { name: "Mew", types: ["Psychic"], height: "0.4m", weight: "4.0kg", description: "So rare that it is said to be a mirage." },
+            152: { name: "Chikorita", types: ["Grass"], height: "0.9m", weight: "6.4kg", description: "A sweet aroma wafts from the leaf on its head." },
+            153: { name: "Bayleef", types: ["Grass"], height: "1.2m", weight: "15.8kg", description: "The buds around its neck emit a spicy aroma." },
+            154: { name: "Meganium", types: ["Grass"], height: "1.8m", weight: "100.5kg", description: "Its breath has the power to revive dead plants." },
+            155: { name: "Cyndaquil", types: ["Fire"], height: "0.5m", weight: "7.9kg", description: "Timid and always curls up in a ball." },
+            156: { name: "Quilava", types: ["Fire"], height: "0.9m", weight: "19.0kg", description: "Intimidates foes with intense flames from its back." },
+            157: { name: "Typhlosion", types: ["Fire"], height: "1.7m", weight: "79.5kg", description: "Creates heat waves that can distort the air." },
+            158: { name: "Totodile", types: ["Water"], height: "0.6m", weight: "9.5kg", description: "Its well-developed jaws are powerful." },
+            159: { name: "Croconaw", types: ["Water"], height: "1.1m", weight: "25.0kg", description: "Once it bites down, it won't let go." },
+            160: { name: "Feraligatr", types: ["Water"], height: "2.3m", weight: "88.8kg", description: "Intimidates foes by opening its huge mouth." },
+            161: { name: "Sentret", types: ["Normal"], height: "0.8m", weight: "6.0kg", description: "A very cautious Pokémon that stands on its tail." },
+            162: { name: "Furret", types: ["Normal"], height: "1.8m", weight: "32.5kg", description: "Makes its nest in narrow burrows underground." },
+            163: { name: "Hoothoot", types: ["Normal", "Flying"], height: "0.7m", weight: "21.2kg", description: "Always stands on one foot." },
+            164: { name: "Noctowl", types: ["Normal", "Flying"], height: "1.6m", weight: "40.8kg", description: "Can see in the dark with its special eyes." },
+            165: { name: "Ledyba", types: ["Bug", "Flying"], height: "1.0m", weight: "10.8kg", description: "Very timid and gathers with others for warmth." },
+            166: { name: "Ledian", types: ["Bug", "Flying"], height: "1.4m", weight: "35.6kg", description: "Uses starlight as its energy source." },
+            167: { name: "Spinarak", types: ["Bug", "Poison"], height: "0.5m", weight: "8.5kg", description: "Spins a web of thin but strong silk." },
+            168: { name: "Ariados", types: ["Bug", "Poison"], height: "1.1m", weight: "33.5kg", description: "Spins a web and waits for prey." },
+            169: { name: "Crobat", types: ["Poison", "Flying"], height: "1.8m", weight: "75.0kg", description: "Its four wings allow it to fly silently." },
+            170: { name: "Chinchou", types: ["Water", "Electric"], height: "0.5m", weight: "12.0kg", description: "Uses its antennae to communicate." },
+            171: { name: "Lanturn", types: ["Water", "Electric"], height: "1.2m", weight: "22.5kg", description: "The light from its antennae can be seen from far away." },
+            172: { name: "Pichu", types: ["Electric"], height: "0.3m", weight: "2.0kg", description: "Not yet skilled at storing electricity." },
+            173: { name: "Cleffa", types: ["Fairy"], height: "0.3m", weight: "3.0kg", description: "Appears when shooting stars light up the night sky." },
+            174: { name: "Igglybuff", types: ["Normal", "Fairy"], height: "0.3m", weight: "1.0kg", description: "Its soft and bouncy body is pleasant to touch." },
+            175: { name: "Togepi", types: ["Fairy"], height: "0.3m", weight: "1.5kg", description: "The shell is filled with joy and happiness." },
+            176: { name: "Togetic", types: ["Fairy", "Flying"], height: "0.6m", weight: "3.2kg", description: "Brings good luck to people who are kind." },
+            177: { name: "Natu", types: ["Psychic", "Flying"], height: "0.2m", weight: "2.0kg", description: "Picks food from cactus plants with its beak." },
+            178: { name: "Xatu", types: ["Psychic", "Flying"], height: "1.5m", weight: "15.0kg", description: "Sees both the past and the future." },
+            179: { name: "Mareep", types: ["Electric"], height: "0.6m", weight: "7.8kg", description: "Its fluffy coat stores electricity." },
+            180: { name: "Flaaffy", types: ["Electric"], height: "0.8m", weight: "13.3kg", description: "Its wool quality changes to generate more electricity." },
+            181: { name: "Ampharos", types: ["Electric"], height: "1.4m", weight: "61.5kg", description: "The tail shines like a beacon." },
+            182: { name: "Bellossom", types: ["Grass"], height: "0.4m", weight: "5.8kg", description: "Dances when the warm sunlight shines on it." },
+            183: { name: "Marill", types: ["Water", "Fairy"], height: "0.4m", weight: "8.5kg", description: "The tip of its tail is filled with oil." },
+            184: { name: "Azumarill", types: ["Water", "Fairy"], height: "0.8m", weight: "28.5kg", description: "Can make balloons out of air." },
+            185: { name: "Sudowoodo", types: ["Rock"], height: "1.2m", weight: "38.0kg", description: "Pretends to be a tree to avoid being attacked." },
+            186: { name: "Politoed", types: ["Water"], height: "1.1m", weight: "33.9kg", description: "Acts as a leader to groups of Poliwag and Poliwhirl." },
+            187: { name: "Hoppip", types: ["Grass", "Flying"], height: "0.4m", weight: "0.5kg", description: "Drifts on winds due to its light body." },
+            188: { name: "Skiploom", types: ["Grass", "Flying"], height: "0.6m", weight: "1.0kg", description: "Blooms when the temperature rises above 64 degrees." },
+            189: { name: "Jumpluff", types: ["Grass", "Flying"], height: "0.8m", weight: "3.0kg", description: "Spreads its spores by riding the winds." },
+            190: { name: "Aipom", types: ["Normal"], height: "0.8m", weight: "11.5kg", description: "Uses its tail as freely as its hands." },
+            191: { name: "Sunkern", types: ["Grass"], height: "0.3m", weight: "1.8kg", description: "Tries to move as little as possible to conserve energy." },
+            192: { name: "Sunflora", types: ["Grass"], height: "0.8m", weight: "8.5kg", description: "Converts sunlight into energy." },
+            193: { name: "Yanma", types: ["Bug", "Flying"], height: "1.2m", weight: "38.0kg", description: "Can generate shock waves by beating its wings." },
+            194: { name: "Wooper", types: ["Water", "Ground"], height: "0.4m", weight: "8.5kg", description: "Lives in cold water and feeds on aquatic plants." },
+            195: { name: "Quagsire", types: ["Water", "Ground"], height: "1.4m", weight: "75.0kg", description: "Very easygoing and doesn't care about anything." },
+            196: { name: "Espeon", types: ["Psychic"], height: "0.9m", weight: "26.5kg", description: "Predicts attacks using its psychic power." },
+            197: { name: "Umbreon", types: ["Dark"], height: "1.0m", weight: "27.0kg", description: "Rings on its body glow when it attacks." },
+            198: { name: "Murkrow", types: ["Dark", "Flying"], height: "0.5m", weight: "2.1kg", description: "Feared as a bringer of misfortune." },
+            199: { name: "Slowking", types: ["Water", "Psychic"], height: "2.0m", weight: "79.5kg", description: "Has incredible intellect and insight." },
+            200: { name: "Misdreavus", types: ["Ghost"], height: "0.7m", weight: "1.0kg", description: "Frightens people with a creepy wailing cry." },
+            201: { name: "Unown", types: ["Psychic"], height: "0.5m", weight: "5.0kg", description: "Shaped like ancient letters and symbols." },
+            202: { name: "Wobbuffet", types: ["Psychic"], height: "1.3m", weight: "28.5kg", description: "Hates light and shock and hides in darkness." },
+            203: { name: "Girafarig", types: ["Normal", "Psychic"], height: "1.5m", weight: "41.5kg", description: "The head and tail work together." },
+            204: { name: "Pineco", types: ["Bug"], height: "0.6m", weight: "7.2kg", description: "Hangs from tree branches and waits." },
+            205: { name: "Forretress", types: ["Bug", "Steel"], height: "1.2m", weight: "125.8kg", description: "Protected by a steel-hard shell." },
+            206: { name: "Dunsparce", types: ["Normal"], height: "1.5m", weight: "14.0kg", description: "Burrows in the ground using its tail." },
+            207: { name: "Gligar", types: ["Ground", "Flying"], height: "1.1m", weight: "64.8kg", description: "Glides without making a sound." },
+            208: { name: "Steelix", types: ["Steel", "Ground"], height: "9.2m", weight: "400.0kg", description: "Lives deep underground and tempered by pressure." },
+            209: { name: "Snubbull", types: ["Fairy"], height: "0.6m", weight: "7.8kg", description: "Small and weak but tries to look tough." },
+            210: { name: "Granbull", types: ["Fairy"], height: "1.4m", weight: "48.7kg", description: "Has a timid nature despite its appearance." },
+            211: { name: "Qwilfish", types: ["Water", "Poison"], height: "0.5m", weight: "3.9kg", description: "Uses the poison in its spikes for protection." },
+            212: { name: "Scizor", types: ["Bug", "Steel"], height: "1.8m", weight: "118.0kg", description: "Slashes with its sharp pincers." },
+            213: { name: "Shuckle", types: ["Bug", "Rock"], height: "0.6m", weight: "20.5kg", description: "Stores berries inside its shell." },
+            214: { name: "Heracross", types: ["Bug", "Fighting"], height: "1.5m", weight: "54.0kg", description: "Proud of its powerful horn." },
+            215: { name: "Sneasel", types: ["Dark", "Ice"], height: "0.9m", weight: "28.0kg", description: "Uses its sharp claws to climb trees." },
+            216: { name: "Teddiursa", types: ["Normal"], height: "0.6m", weight: "8.8kg", description: "Licks its paws that are soaked with honey." },
+            217: { name: "Ursaring", types: ["Normal"], height: "1.8m", weight: "125.8kg", description: "Very territorial and skilled at finding food." },
+            218: { name: "Slugma", types: ["Fire"], height: "0.7m", weight: "35.0kg", description: "Its body is made of magma." },
+            219: { name: "Magcargo", types: ["Fire", "Rock"], height: "0.8m", weight: "55.0kg", description: "Its body temperature is over 18,000 degrees." },
+            220: { name: "Swinub", types: ["Ice", "Ground"], height: "0.4m", weight: "6.5kg", description: "Rubs its snout on the ground to find food." },
+            221: { name: "Piloswine", types: ["Ice", "Ground"], height: "1.1m", weight: "55.8kg", description: "Covered by long hair that hides its eyes." },
+            222: { name: "Corsola", types: ["Water", "Rock"], height: "0.6m", weight: "5.0kg", description: "Lives in warm southern seas." },
+            223: { name: "Remoraid", types: ["Water"], height: "0.6m", weight: "12.0kg", description: "Shoots water at prey from its mouth." },
+            224: { name: "Octillery", types: ["Water"], height: "0.9m", weight: "28.5kg", description: "Traps foes with its suction cups." },
+            225: { name: "Delibird", types: ["Ice", "Flying"], height: "0.9m", weight: "16.0kg", description: "Carries food bundled up in its tail." },
+            226: { name: "Mantine", types: ["Water", "Flying"], height: "2.1m", weight: "220.0kg", description: "Swims elegantly through the ocean." },
+            227: { name: "Skarmory", types: ["Steel", "Flying"], height: "1.7m", weight: "50.5kg", description: "Its body is covered in hard steel armor." },
+            228: { name: "Houndour", types: ["Dark", "Fire"], height: "0.6m", weight: "10.8kg", description: "Communicates with others using barks." },
+            229: { name: "Houndoom", types: ["Dark", "Fire"], height: "1.4m", weight: "35.0kg", description: "Burns with toxic flames from its mouth." },
+            230: { name: "Kingdra", types: ["Water", "Dragon"], height: "1.8m", weight: "152.0kg", description: "Lives deep underwater where no light reaches." },
+            231: { name: "Phanpy", types: ["Ground"], height: "0.5m", weight: "33.5kg", description: "Uses its long nose to shower itself." },
+            232: { name: "Donphan", types: ["Ground"], height: "1.1m", weight: "120.0kg", description: "Can curl up and roll at high speeds." },
+            233: { name: "Porygon2", types: ["Normal"], height: "0.6m", weight: "32.5kg", description: "An upgraded version created for space exploration." },
+            234: { name: "Stantler", types: ["Normal"], height: "1.4m", weight: "71.2kg", description: "Its antlers have a mysterious power." },
+            235: { name: "Smeargle", types: ["Normal"], height: "1.2m", weight: "58.0kg", description: "Marks its territory using a paint-like fluid." },
+            236: { name: "Tyrogue", types: ["Fighting"], height: "0.7m", weight: "21.0kg", description: "Always practicing to become stronger." },
+            237: { name: "Hitmontop", types: ["Fighting"], height: "1.4m", weight: "48.0kg", description: "Spins on its head to attack." },
+            238: { name: "Smoochum", types: ["Ice", "Psychic"], height: "0.4m", weight: "6.0kg", description: "Loves to kiss everything with its lips." },
+            239: { name: "Elekid", types: ["Electric"], height: "0.6m", weight: "23.5kg", description: "Rotates its arms to generate electricity." },
+            240: { name: "Magby", types: ["Fire"], height: "0.7m", weight: "21.4kg", description: "Found in volcanic areas." },
+            241: { name: "Miltank", types: ["Normal"], height: "1.2m", weight: "75.5kg", description: "Produces highly nutritious milk." },
+            242: { name: "Blissey", types: ["Normal"], height: "1.5m", weight: "46.8kg", description: "Brings happiness and good luck." },
+            243: { name: "Raikou", types: ["Electric"], height: "1.9m", weight: "178.0kg", description: "A legendary beast of lightning." },
+            244: { name: "Entei", types: ["Fire"], height: "2.1m", weight: "198.0kg", description: "A legendary beast of fire." },
+            245: { name: "Suicune", types: ["Water"], height: "2.0m", weight: "187.0kg", description: "A legendary beast of water." },
+            246: { name: "Larvitar", types: ["Rock", "Ground"], height: "0.6m", weight: "72.0kg", description: "Born deep underground and eats soil." },
+            247: { name: "Pupitar", types: ["Rock", "Ground"], height: "1.2m", weight: "152.0kg", description: "Its shell is as hard as sheet metal." },
+            248: { name: "Tyranitar", types: ["Rock", "Dark"], height: "2.0m", weight: "202.0kg", description: "Powerful enough to level mountains." },
+            249: { name: "Lugia", types: ["Psychic", "Flying"], height: "5.2m", weight: "216.0kg", description: "A legendary guardian of the seas." },
+            250: { name: "Ho-oh", types: ["Fire", "Flying"], height: "3.8m", weight: "199.0kg", description: "A legendary guardian of the skies." },
+            251: { name: "Celebi", types: ["Psychic", "Grass"], height: "0.6m", weight: "5.0kg", description: "Travels through time and brings prosperity." }
+        };
+
+        let currentPokemon = 1;
+        const maxPokemon = 251;
+
+        function getSpriteUrl(id) {
+            // Use Bulbagarden archives Gold sprites (Gen 2 style)
+            // Direct media upload path
+            const paddedId = id.toString().padStart(3, '0');
+            return `https://archives.bulbagarden.net/media/upload/Spr_2g_${paddedId}.png`;
+        }
+
+        function displayPokemon(id) {
+            const pokemon = pokedexData[id];
+            
+            if (!pokemon) {
+                document.getElementById('screen').innerHTML = `
+                    <div class="loading">Pokémon #${id} data not available</div>
+                `;
+                return;
+            }
+
+            const typeBadges = pokemon.types.map(type => 
+                `<span class="type-badge type-${type.toLowerCase()}">${type}</span>`
+            ).join('');
+
+            document.getElementById('screen').innerHTML = `
+                <div class="header">
+                    <div class="pokemon-number">#${id.toString().padStart(3, '0')}</div>
+                </div>
+                <div class="pokemon-name">${pokemon.name}</div>
+                <div class="sprite-container">
+                    <img src="${getSpriteUrl(id)}" alt="${pokemon.name}" class="pokemon-sprite" crossorigin="anonymous" onerror="console.error('Failed to load sprite:', this.src); this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png'">
+                </div>
+                <div class="info-section">
+                    <div class="info-row">
+                        <span class="info-label">Type:</span>
+                        <div class="type-container">${typeBadges}</div>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Height:</span>
+                        <span class="info-value">${pokemon.height}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Weight:</span>
+                        <span class="info-value">${pokemon.weight}</span>
+                    </div>
+                </div>
+                <div class="description">${pokemon.description}</div>
+            `;
+        }
+
+        function nextPokemon() {
+            const availableIds = Object.keys(pokedexData).map(Number).sort((a, b) => a - b);
+            const currentIndex = availableIds.indexOf(currentPokemon);
+            const nextIndex = (currentIndex + 1) % availableIds.length;
+            currentPokemon = availableIds[nextIndex];
+            displayPokemon(currentPokemon);
+        }
+
+        function prevPokemon() {
+            const availableIds = Object.keys(pokedexData).map(Number).sort((a, b) => a - b);
+            const currentIndex = availableIds.indexOf(currentPokemon);
+            const prevIndex = (currentIndex - 1 + availableIds.length) % availableIds.length;
+            currentPokemon = availableIds[prevIndex];
+            displayPokemon(currentPokemon);
+        }
+
+        function randomPokemon() {
+            const availableIds = Object.keys(pokedexData).map(Number);
+            currentPokemon = availableIds[Math.floor(Math.random() * availableIds.length)];
+            displayPokemon(currentPokemon);
+        }
+
+        function searchPokemon() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            
+            if (!query) return;
+
+            // Search by number
+            if (!isNaN(query)) {
+                const id = parseInt(query);
+                if (pokedexData[id]) {
+                    currentPokemon = id;
+                    displayPokemon(currentPokemon);
+                    document.getElementById('searchInput').value = '';
+                    return;
+                }
+            }
+
+            // Search by name
+            for (const [id, data] of Object.entries(pokedexData)) {
+                if (data.name.toLowerCase() === query) {
+                    currentPokemon = parseInt(id);
+                    displayPokemon(currentPokemon);
+                    document.getElementById('searchInput').value = '';
+                    return;
+                }
+            }
+
+            alert('Pokémon not found!');
+        }
+
+        // Event listeners
+        document.getElementById('prevBtn').addEventListener('click', prevPokemon);
+        document.getElementById('nextBtn').addEventListener('click', nextPokemon);
+        document.getElementById('randomBtn').addEventListener('click', randomPokemon);
+        document.getElementById('searchBtn').addEventListener('click', searchPokemon);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchPokemon();
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') prevPokemon();
+            if (e.key === 'ArrowRight') nextPokemon();
+        });
+
+        // Initialize
+        displayPokemon(currentPokemon);
+    </script>
+</body>
+</html>
